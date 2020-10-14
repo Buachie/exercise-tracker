@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef } from 'react';
+import axios from 'axios';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -22,8 +23,8 @@ const CreateExercise = () => {
     const setTime = (date) => {
         setDate(date)
     };
-    const setUser = () => {
-        setUsers('')
+    const setUser = (e) => {
+        setUsers(users.concat(e))
     }
 
     const onSubmit = (e) => {
@@ -34,15 +35,27 @@ const CreateExercise = () => {
             duration: duration,
             date: date
         }
-        console.log(exercise);
+
+        axios.post('http://localhost:5000/exercises/add', exercise)
+            .then(res => console.log(res.data));
+
+       // console.log(exercise);
         window.location = '/';
     }
 
     useEffect(() => {
-        setUsers(['Test User'])
-        setUsername('Test User')
+        axios.get('http://localhost:5000/users/')
+            .then(res => {
+                console.log(res.data)
+                
+                if (res.data.length > 0) {
+                    setUser(res.data.map(user => user.username))
+                    //setName(res.data[0].username)
+                }
+            })
     }, [])
-const inputRef = useRef("userInput")
+
+    const inputRef = useRef("userInput")
 
     return (
         <div>
@@ -50,7 +63,7 @@ const inputRef = useRef("userInput")
             <form onSubmit={onSubmit}>
                 <div className="form-group">
                     <label>Username: </label>
-                    <select ref={inputRef} required className="form-control" value={username} onChange={setName}>
+                    <select ref={inputRef} required className="form-control" onChange={setName}>
                         {users.map((user) => {
                             return <option key={user} value={user}>{user}</option>
                         })}
